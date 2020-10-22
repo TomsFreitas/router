@@ -1,19 +1,5 @@
-/* Copyright 2018 Rendits
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
 
-/* Service used to periodically send CAM messages to the router.
+/* Service used to periodically send DENM messages to the router.
  */
 
 package com.rendits.testsuite;
@@ -21,7 +7,6 @@ package com.rendits.testsuite;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ScheduledExecutorService;
@@ -29,9 +14,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.rendits.router.SimpleCam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import de.taimos.gpsd4java.api.ObjectListener;
+import de.taimos.gpsd4java.backend.GPSdEndpoint;
+import de.taimos.gpsd4java.backend.ResultParser;
+import de.taimos.gpsd4java.types.ATTObject;
+import de.taimos.gpsd4java.types.DeviceObject;
+import de.taimos.gpsd4java.types.DevicesObject;
+import de.taimos.gpsd4java.types.SATObject;
+import de.taimos.gpsd4java.types.SKYObject;
+import de.taimos.gpsd4java.types.TPVObject;
+import de.taimos.gpsd4java.types.subframes.SUBFRAMEObject;
 
-public class CamService {
-    private final static Logger logger = LoggerFactory.getLogger(CamService.class);
+
+public class DenmService {
+    private final static Logger logger = LoggerFactory.getLogger(DenmService.class);
 
     private int period;
     private DatagramSocket socket;
@@ -44,8 +40,10 @@ public class CamService {
     private byte[] buffer;
 
     private ConcurrentHashMap highResTimestamps;
+    final gpsdata data = new gpsdata();
 
-    CamService(int period,
+
+    DenmService(int period,
                DatagramSocket socket,
                InetAddress routerAddress,
                int routerPort,
@@ -61,9 +59,35 @@ public class CamService {
         this.highResTimestamps = highResTimestamps;
 
         /* Add the runner to the thread pool */
-        scheduler.scheduleAtFixedRate(runner, period, 100, TimeUnit.MILLISECONDS); //Run at 100 miliseconds
+        scheduler.scheduleAtFixedRate(runner, period, period, TimeUnit.MILLISECONDS); // Are denms periodic?
 
-        logger.info("Starting CAM service...");
+        logger.info("Starting DENM service...");
+
+        try{
+            final GPSdEndpoint ep = new GPSdEndpoint("localhost", 2947, new ResultParser());
+            ep.addListener(new ObjectListener() {
+                @Override
+                public void handleTPV(final TPVObject tpv) {
+                    logger.info("TPV: {}", tpv);
+                    data.longitude = tpv.getLongitude();
+                    data.latitude = tpv.getLatitude();
+                    data.course = tpv.getCourse();
+                    data.altitude = tpv.getAltitude();
+                    data.longitudeerror = tpv.getLongitudeError();
+                    data.latitudeerror = tpv.getLatitudeError();
+                    data.courseerror = tpv.getCourseError();
+                    data.speed = tpv.getSpeed();
+                    data.speederror = tpv.getSpeedError();
+                    data.altitudeerror = tpv.getLatitudeError();
+                    
+                }
+            });
+    
+            ep.start();
+            }catch (final Exception e){
+                System.out.println("Não deu");
+            }
+
     }
 
     private Runnable runner = new Runnable() {
@@ -113,3 +137,37 @@ public class CamService {
             }
         };
 }
+
+class gpsdata{
+
+    public double latitude;
+    public double longitude;
+    public double altitude;
+    public double latitudeerror;
+    public double longitudeerror;
+    public double altitudeerror;
+    public double course;
+    public double speed;
+    public double courseerror;
+    public double speederror;
+
+    public gpsdata(double latitude, double longitude, double altitude, double latitudeerror,
+    double longitudeerror, double altitudeerror, double course, double speed, double courseerror,
+    double speederror ){
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.altitude = altitude;
+        this.latitudeerror = latitudeerror;
+        this.longitudeerror = longitudeerror;
+        this.altitudeerror = altitudeerror;
+        this.course = course;
+        this.speed = speed;
+        this.courseerror = courseerror;  
+        this.speederror = speederror;
+
+
+    }
+
+    public gpsdata(){}
+}
+
