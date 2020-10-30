@@ -11,7 +11,7 @@ import java.net.InetAddress;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ConcurrentHashMap;
-import com.rendits.router.SimpleCam;
+import com.rendits.router.SimpleDenm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.taimos.gpsd4java.api.ObjectListener;
@@ -36,7 +36,7 @@ public class DenmService {
 
     private Vehicle vehicle;
 
-    private SimpleCam simpleCam;
+    private SimpleDenm simpledenm;
     private byte[] buffer;
 
     private ConcurrentHashMap highResTimestamps;
@@ -59,7 +59,7 @@ public class DenmService {
         this.highResTimestamps = highResTimestamps;
 
         /* Add the runner to the thread pool */
-        scheduler.scheduleAtFixedRate(runner, period, period, TimeUnit.MILLISECONDS); // Are denms periodic?
+        scheduler.scheduleAtFixedRate(runner, period, 100, TimeUnit.MILLISECONDS); // Are denms periodic?
 
         logger.info("Starting DENM service...");
 
@@ -101,38 +101,52 @@ public class DenmService {
                     int generationDeltaTime = vehicle.getGenerationDeltaTime();
                     highResTimestamps.put(generationDeltaTime, nanoTime);
 
+                    int longitude = (int)(data.longitude * Math.pow(10, 7));
+                    int latitude = (int)(data.latitude * Math.pow(10, 7));
+                    int altitude = (int)(data.altitude*100);
+                    int speed = (int)(data.speed*100);
+                    int course = (int)(data.course * 10);
+                   
+
                     /* Create a simple CAM manually */
-                    SimpleCam simpleCam = new SimpleCam(vehicle.getStationID(),
+                    SimpleDenm simpledenm = new SimpleDenm(vehicle.getStationID(),
                                                         generationDeltaTime,
-                                                        (byte) 128, //containerMask
+                                                        (byte) 160, //containerMask
+                                                        (byte) 248, //managementMask
+                                                        1, //detectionTime
+                                                        2, //referenceTime
+                                                        0, //termination
+                                                        latitude, //latitude
+                                                        longitude, //longtitude
+                                                        1, //semiMajorConfidence
+                                                        2, //semiMinorConfidence
+                                                        2, //semiMajorOrientation
+                                                        altitude, //altitude
+                                                        0, //relevanceDistance
+                                                        0, //relevanceTrafficDirection
+                                                        0, //validityDuration
+                                                        1, //transmissionIntervall
                                                         5, //stationType
-                                                        2, //latitude
-                                                        48, //longitude
-                                                        0, //semiMajorConfidence
-                                                        0, //semiMinorConfidence
-                                                        0, //semiMajorOrientation
-                                                        400, //altitude
-                                                        1, //heading value
-                                                        1, //headingConfidence
-                                                        0, //speedValue
-                                                        1, //speedConfidence
-                                                        40, //vehicleLength
-                                                        20, //vehicleWidth
-                                                        159, //longitudinalAcc
-                                                        1, //longitudinalAccConf
-                                                        2, //yawRateValue
-                                                        1, //yawRateConfidence
-                                                        0); //vehicleRole
+                                                        (byte) 128, //situationMask
+                                                        4, //informationQuality
+                                                        2, //causeCode
+                                                        2, //subCauseCode
+                                                        0, //linkedCuaseCode
+                                                        0, //linkedSubCauseCode
+                                                        (byte) 8, //alacarteMask
+                                                        0, //lanePosition
+                                                        0, //temperature
+                                                        5); //positioningSolutionType);
 
                     /* Format it as a byte array */
-                    byte[] buffer = simpleCam.asByteArray();
+                    byte[] buffer = simpledenm.asByteArray();
 
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                     packet.setPort(routerPort);
                     packet.setAddress(routerAddress);
                     socket.send(packet);
                 } catch(IOException e) {
-                    logger.error("IOException in CAM Service.");
+                    logger.error("IOException in Denm Service.");
                 }
             }
         };

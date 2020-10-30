@@ -74,6 +74,8 @@ public class TestSuite {
 
         //IclcmService iclcmService = new IclcmService(1000, rcvSocket, routerAddress, portSendIclcm, scheduler);
 
+        DenmService denmService = new DenmService(10, rcvSocket, routerAddress, portSendDenm, vehicle, scheduler, highResTimestamps);
+
         ReceiveService receiveService = new ReceiveService(rcvSocket);
         LatencyTest latencyTest = new LatencyTest(receiveService, executor, highResTimestamps);
         latencyTest.start();

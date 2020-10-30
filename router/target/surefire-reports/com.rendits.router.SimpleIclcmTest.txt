@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.rendits.router.SimpleIclcmTest
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.398 sec - in com.rendits.router.SimpleIclcmTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.291 sec - in com.rendits.router.SimpleIclcmTest

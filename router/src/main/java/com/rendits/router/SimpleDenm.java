@@ -718,7 +718,7 @@ public class SimpleDenm {
    * Return the byte buffer representation of the message. Typically used when transmitting the
    * message over UDP.
    */
-  byte[] asByteArray() {
+  public byte[] asByteArray() {
     byte[] packetBuffer = new byte[SIMPLE_DENM_LENGTH];
     ByteBuffer buffer = ByteBuffer.wrap(packetBuffer);
     buffer.put(messageId);

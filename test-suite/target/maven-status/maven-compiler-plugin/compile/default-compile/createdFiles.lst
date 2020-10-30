@@ -5,6 +5,9 @@ com/rendits/testsuite/Vehicle.class
 com/rendits/testsuite/DenmService.class
 com/rendits/testsuite/DenmService$1.class
 com/rendits/testsuite/TestSuite$IclcmService.class
+com/rendits/testsuite/gpsdata.class
+com/rendits/testsuite/DenmService$2.class
+com/rendits/testsuite/CamService$2.class
 com/rendits/testsuite/TestSuite$ConfigService.class
 com/rendits/testsuite/TestSuite$ReceiveService.class
 com/rendits/testsuite/CamService.class
