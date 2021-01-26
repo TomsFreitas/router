@@ -171,3 +171,36 @@ public class CamService {
             }
         };
 }
+
+class gpsdata{
+
+    public double latitude;
+    public double longitude;
+    public double altitude;
+    public double latitudeerror;
+    public double longitudeerror;
+    public double altitudeerror;
+    public double course;
+    public double speed;
+    public double courseerror;
+    public double speederror;
+
+    public gpsdata(double latitude, double longitude, double altitude, double latitudeerror,
+    double longitudeerror, double altitudeerror, double course, double speed, double courseerror,
+    double speederror ){
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.altitude = altitude;
+        this.latitudeerror = latitudeerror;
+        this.longitudeerror = longitudeerror;
+        this.altitudeerror = altitudeerror;
+        this.course = course;
+        this.speed = speed;
+        this.courseerror = courseerror;  
+        this.speederror = speederror;
+
+
+    }
+
+    public gpsdata(){}
+}
